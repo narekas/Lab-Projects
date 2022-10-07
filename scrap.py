@@ -7,7 +7,7 @@ headers = {
     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'
 }
 
-for page in range(1, 2):
+for page in range(1, 3):
     sleep(1)
     url = f'http://www.noyantapan.am/catalog/books/?PAGE_1=1&PAGEN_1={page}'
     response = requests.get(url, headers=headers)
