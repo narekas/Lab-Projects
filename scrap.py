@@ -2,16 +2,18 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
+
 class Book:
     def __init__(self, title, summary):
-        self.title      = title
-        self.summary    = summary
+        self.title = title
+        self.summary = summary
 
 
 def get_next_page(response):
     soup = BeautifulSoup(response.text, "lxml")
     tie = soup.find('li', class_="bx-pag-next").find('a')
     return str() if tie == None else "http://www.noyantapan.am" + tie.get('href')
+
 
 def parse_book(url):
     response = requests.get(url)
@@ -20,13 +22,10 @@ def parse_book(url):
     title = soup.find('h1', class_='changeName').text
 
     table = soup.find('table', class_='stats').find_all('tr', class_='gray')
-    summary = { card.find('td').text : card.find_all('td')[1].text.strip() for card in table }
+    summary = {card.find('td').text: card.find_all('td')[1].text.strip() for card in table}
     print(title)
 
-    return Book( title, summary )
-
-
-
+    return Book(title, summary)
 
 
 books_list = list()
@@ -39,11 +38,9 @@ while current_page:
     item_products = soup.find('div', class_='items productList')
     cards = item_products.find_all('div', class_='item product sku')
     for card in cards:
-        books_list.append( parse_book("http://www.noyantapan.am" + card.find('a', class_='name').get('href')) )
+        books_list.append(parse_book("http://www.noyantapan.am" + card.find('a', class_='name').get('href')))
 
     current_page = get_next_page(response)
-
-
 
 column_set = set()
 for book in books_list:
@@ -59,4 +56,3 @@ for book in books_list:
     with open('noyantapan.csv', 'a') as file:
         writer = csv.writer(file)
         writer.writerow([book.summary.get(decisive) for decisive in column_list])
-
