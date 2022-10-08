@@ -1,27 +1,62 @@
 import requests
 from bs4 import BeautifulSoup
-from time import sleep
+import csv
 
-list_card_url = []
-headers = {
-    'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'
-}
-
-for page in range(1, 3):
-    sleep(1)
-    url = f'http://www.noyantapan.am/catalog/books/?PAGE_1=1&PAGEN_1={page}'
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.text, 'lxml')
-    data = soup.find_all('div', class_='item product sku')[:30]
-    for item in data:
-        card_url = 'http://www.noyantapan.am' + item.find('a', class_='name').get('href')
-        list_card_url.append(card_url)
+class Book:
+    def __init__(self, title, summary):
+        self.title      = title
+        self.summary    = summary
 
 
-for card_url in list_card_url:
-    response = requests.get(card_url, headers=headers)
-    soup = BeautifulSoup(response.text, 'lxml')
-    data = soup.find('div', class_='mainContainer')
-    code = ''.join(data.find('div', class_='propertyTable').text.split())
-    print(code)
+def get_next_page(response):
+    soup = BeautifulSoup(response.text, "lxml")
+    tie = soup.find('li', class_="bx-pag-next").find('a')
+    return str() if tie == None else "http://www.noyantapan.am" + tie.get('href')
+
+def parse_book(url):
+    response = requests.get(url)
+    soup = BeautifulSoup(response.text, "lxml")
+
+    title = soup.find('h1', class_='changeName').text
+
+    table = soup.find('table', class_='stats').find_all('tr', class_='gray')
+    summary = { card.find('td').text : card.find_all('td')[1].text.strip() for card in table }
+    print(title)
+
+    return Book( title, summary )
+
+
+
+
+
+books_list = list()
+
+current_page = "http://www.noyantapan.am/catalog/books/?PAGEN_1=1"
+while current_page:
+    response = requests.get(current_page)
+    soup = BeautifulSoup(response.text, "lxml")
+
+    item_products = soup.find('div', class_='items productList')
+    cards = item_products.find_all('div', class_='item product sku')
+    for card in cards:
+        books_list.append( parse_book("http://www.noyantapan.am" + card.find('a', class_='name').get('href')) )
+
+    current_page = get_next_page(response)
+
+
+
+column_set = set()
+for book in books_list:
+    for key in book.summary.keys():
+        column_set.add(key)
+column_list = [*column_set]
+
+with open('noyantapan.csv', 'w') as file:
+    writer = csv.writer(file)
+    writer.writerow(column_list)
+
+for book in books_list:
+    with open('noyantapan.csv', 'a') as file:
+        writer = csv.writer(file)
+        writer.writerow([book.summary.get(decisive) for decisive in column_list])
 
