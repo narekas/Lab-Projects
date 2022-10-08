@@ -16,7 +16,7 @@ def get_data():
                 'title',
                 'price',
                 'author',
-                'summary'
+                'publisher'
             )
         )
     for page in range(1, 2):
@@ -33,11 +33,27 @@ def get_data():
 for card_url in get_data():
     response = requests.get(card_url, headers=headers)
     soup = BeautifulSoup(response.text, 'lxml')
-    title = soup.find('h1', class_='product-name mb-4 d-none d-md-block').text
-    price = soup.find('div', class_='product-price-view mb-2').text
-    author = soup.find('a', class_='color-main text-decoration-none author-btn').text
-    table = soup.find('div', class_='tab-pane fade show active').find_all('div', class_='form-row')
+    try:
+        title = soup.find('h1', class_='product-name mb-4 d-none d-md-block').text
+    except:
+        title = ''
+    try:
+        price = soup.find('div', class_='product-price-view mb-2').text
+    except:
+        price = ''
+    try:
+        author = soup.find('a', class_='color-main text-decoration-none author-btn').text
+    except:
+        author = ''
+    try:
+        table = soup.find('div', class_='tab-pane fade show active').find_all('div', class_='form-row')
+    except:
+        table = ''
     summary = [couple.find_all('div')[1].text for couple in table]
+    try:
+        publisher = summary[0]
+    except:
+        publisher = ''
     print(title)
 
     with open('zangak.csv', 'a') as file:
@@ -47,6 +63,6 @@ for card_url in get_data():
                 title,
                 price,
                 author,
-                summary
+                publisher
             )
         )
