@@ -2,57 +2,100 @@ import requests
 from bs4 import BeautifulSoup
 import csv
 
-
-class Book:
-    def __init__(self, title, summary):
-        self.title = title
-        self.summary = summary
+headers = {
+    'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 Safari/537.36'
+}
 
 
-def get_next_page(response):
-    soup = BeautifulSoup(response.text, "lxml")
-    tie = soup.find('li', class_="bx-pag-next").find('a')
-    return str() if tie == None else "http://www.noyantapan.am" + tie.get('href')
+def get_data():
+    with open('noyantapan.csv', 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow(
+            (
+                'title',
+                'author',
+                'price',
+                'language',
+                'pages',
+                'genre',
+                'code',
+                'year',
+                'url'
+
+            )
+        )
+    for page in range(1, 286):
+        url = f'http://www.noyantapan.am/catalog/books/?PAGEN_1={page}'
+        response  = requests.get(url, headers=headers)
+        soup = BeautifulSoup(response.text, 'lxml')
+        data = soup.find('div', class_='items productList')
+        cards = data.find_all('div', class_='item product sku')
+        for c_url in cards:
+            cards_url = 'http://www.noyantapan.am' + c_url.find('a', class_='name').get('href')
+            yield cards_url
 
 
-def parse_book(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "lxml")
-
-    title = soup.find('h1', class_='changeName').text
-
-    table = soup.find('table', class_='stats').find_all('tr', class_='gray')
-    summary = {card.find('td').text: card.find_all('td')[1].text.strip() for card in table}
+for card_url in get_data():
+    response = requests.get(card_url, headers=headers)
+    soup = BeautifulSoup(response.text, 'lxml')
+    try:
+        title = soup.find('h1', class_='changeName').text
+    except:
+        title = ''
     print(title)
-
-    return Book(title, summary)
-
-
-books_list = list()
-
-current_page = "http://www.noyantapan.am/catalog/books/?PAGEN_1=1"
-while current_page:
-    response = requests.get(current_page)
-    soup = BeautifulSoup(response.text, "lxml")
-
-    item_products = soup.find('div', class_='items productList')
-    cards = item_products.find_all('div', class_='item product sku')
-    for card in cards:
-        books_list.append(parse_book("http://www.noyantapan.am" + card.find('a', class_='name').get('href')))
-
-    current_page = get_next_page(response)
-
-column_set = set()
-for book in books_list:
-    for key in book.summary.keys():
-        column_set.add(key)
-column_list = [*column_set]
-
-with open('noyantapan.csv', 'w') as file:
-    writer = csv.writer(file)
-    writer.writerow(column_list)
-
-for book in books_list:
+    try:
+        price = soup.find('a', class_='price changePrice').text
+    except:
+        price = ''
+    try:
+        table = soup.find('table', class_='stats').find_all('tr', class_='gray')
+    except:
+        table = ''
+    try:
+        summary = {card.find('td').text: card.find_all('td')[1].text.strip() for card in table}
+    except:
+        summary = ''
+    try:
+        author = summary['Հեղինակ']
+    except:
+        author = ''
+    try:
+        language = summary['Լեզու']
+    except:
+        language = ''
+    try:
+        pages = summary['Էջերի քանակը']
+    except:
+        pages = ''
+    try:
+        genre = soup.find('div', id="breadcrumbs").find_all('li')[6].text
+    except:
+        genre = ''
+    try:
+        code = summary['Կոդ']
+    except:
+        code = ''
+    try:
+        year = summary['Տարեթիվ']
+    except:
+        year = ''
+    try:
+        book_url = card_url
+    except:
+        book_url = ''
     with open('noyantapan.csv', 'a') as file:
         writer = csv.writer(file)
-        writer.writerow([book.summary.get(decisive) for decisive in column_list])
+        writer.writerow(
+            (
+                title,
+                author,
+                price,
+                language,
+                pages,
+                genre,
+                code,
+                year,
+                book_url
+
+            )
+        )
