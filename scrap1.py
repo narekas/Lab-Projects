@@ -7,19 +7,28 @@ headers = {
 }
 
 
-
 def get_data():
     with open('zangak.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerow(
             (
                 'title',
-                'price',
                 'author',
-                'publisher'
+                'publisher',
+                'price',
+                'language',
+                'pages',
+                'genre',
+                'category',
+                'target',
+                'EAN',
+                'code',
+                'year',
+                'url'
+
             )
         )
-    for page in range(1, 2):
+    for page in range(1, 920):
         url = f'https://zangakbookstore.am/grqer?page={page}'
         response = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.text, 'lxml')
@@ -37,6 +46,7 @@ for card_url in get_data():
         title = soup.find('h1', class_='product-name mb-4 d-none d-md-block').text
     except:
         title = ''
+    print(title)
     try:
         price = soup.find('div', class_='product-price-view mb-2').text
     except:
@@ -49,20 +59,71 @@ for card_url in get_data():
         table = soup.find('div', class_='tab-pane fade show active').find_all('div', class_='form-row')
     except:
         table = ''
-    summary = [couple.find_all('div')[1].text for couple in table]
+    try:
+        summary = [couple.find_all('div')[1].text for couple in table]
+    except:
+        summary = ''
     try:
         publisher = summary[0]
     except:
         publisher = ''
-    print(title)
-
+    try:
+        language = summary[4]
+    except:
+        language = ''
+    try:
+        pages = summary[6]
+    except:
+        pages = ''
+    try:
+        cover = summary[5]
+    except:
+        cover = ''
+    try:
+        genre = soup.find_all('li', class_='breadcrumb-item')[1].text
+    except:
+        genre = ''
+    try:
+        category = soup.find_all('li', class_='breadcrumb-item')[2].text
+    except:
+        category = ''
+    try:
+        target = summary[9]
+    except:
+        target = ''
+    try:
+        EAN = summary[1]
+    except:
+        EAN = ''
+    try:
+        code = summary[2]
+    except:
+        code = ''
+    try:
+        year = summary[3]
+    except:
+        year = ''
+    try:
+        book_url = card_url
+    except:
+        book_url = ''
     with open('zangak.csv', 'a') as file:
         writer = csv.writer(file)
         writer.writerow(
             (
                 title,
-                price,
                 author,
-                publisher
+                publisher,
+                price,
+                language,
+                pages,
+                genre,
+                category,
+                target,
+                EAN,
+                code,
+                year,
+                book_url
+
             )
         )
