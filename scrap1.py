@@ -63,23 +63,23 @@ for card_url in get_data():
     except:
         table = ''
     try:
-        summary = [couple.find_all('div')[1].text for couple in table]
+        summary = {couple.find('div').text: couple.find_all('div')[1].text for couple in table}
     except:
         summary = ''
     try:
-        publisher = summary[0]
+        publisher = summary['Հրատարակչություն']
     except:
         publisher = ''
     try:
-        language = summary[4]
+        language = summary['Լեզու']
     except:
         language = ''
     try:
-        pages = summary[6]
+        pages = summary['Էջեր']
     except:
         pages = ''
     try:
-        cover = summary[5]
+        cover = summary['Կազմ']
     except:
         cover = ''
     try:
@@ -91,19 +91,19 @@ for card_url in get_data():
     except:
         category = ''
     try:
-        target = summary[9]
+        target = summary['Տարիք']
     except:
         target = ''
     try:
-        EAN = summary[1]
+        EAN = summary['EAN']
     except:
         EAN = ''
     try:
-        code = summary[2]
+        code = summary['Կոդ']
     except:
         code = ''
     try:
-        year = summary[3]
+        year = summary['Տարեթիվ']
     except:
         year = ''
     try:
