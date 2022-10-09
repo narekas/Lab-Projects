@@ -28,7 +28,7 @@ def get_data():
 
             )
         )
-    for page in range(1, 2):
+    for page in range(1, 920):
         url = f'https://zangakbookstore.am/grqer?page={page}'
         response  = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.text, 'lxml')
