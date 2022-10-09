@@ -28,9 +28,9 @@ def get_data():
 
             )
         )
-    for page in range(1, 920):
+    for page in range(1, 2):
         url = f'https://zangakbookstore.am/grqer?page={page}'
-        response = requests.get(url, headers=headers)
+        response  = requests.get(url, headers=headers)
         soup = BeautifulSoup(response.text, 'lxml')
         data = soup.find('div', class_='row no-gutters product-items-list items-list-container')
         cards = data.find_all('div', class_='col-6 col-md-4 col-lg-6 col-xl-4 col-xxl-3 mb-5 list-item')
@@ -56,7 +56,10 @@ for card_url in get_data():
     except:
         author = ''
     try:
-        table = soup.find('div', class_='tab-pane fade show active').find_all('div', class_='form-row')
+        found = soup.find('div', id='tab_details', class_='tab-pane fade show active')
+        if found == None:
+            found = soup.find('div', id='tab_details', class_='tab-pane fade ')
+        table = soup.find_all('div', class_='form-row')
     except:
         table = ''
     try:
